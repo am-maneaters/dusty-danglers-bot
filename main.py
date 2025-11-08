@@ -27,7 +27,10 @@ CHANNEL_ID = int(
     os.getenv("CHANNEL_ID")
 )  # Channel ID from Render environment variables
 
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.default())
+intents = discord.Intents.default()
+intents.message_content = True  # THIS IS REQUIRED
+
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 # --- Event storage ---
 EVENTS_FILE = "events.json"
