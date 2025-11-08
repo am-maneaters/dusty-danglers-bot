@@ -2,3 +2,4 @@ discord.py
 flask
 bs4
 requests
+dotenv
