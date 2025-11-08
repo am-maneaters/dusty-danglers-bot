@@ -6,6 +6,7 @@ import os
 from flask import Flask
 from threading import Thread
 import asyncio
+
 # from dotenv import load_dotenv
 import random
 from typing import TypedDict
@@ -359,11 +360,16 @@ quotes = [
 
 
 @bot.command()
-async def yell(ctx: commands.Context):
+async def fine_yell_random(ctx: commands.Context):
     quote = random.choice(quotes)
     quote = f'*"{quote[0]}"* - {quote[1]}'
     await ctx.send(quote)
-    await ctx.message.delete()
+
+
+@bot.command()
+async def fine_yell(ctx: commands.Context, *, arg):
+    quote = f'*"{arg}"* - Dan Fine'
+    await ctx.send(quote)
 
 
 @bot.command()
