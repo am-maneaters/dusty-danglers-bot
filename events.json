@@ -4,132 +4,170 @@
 		"time": "8:30 PM",
 		"home_or_away": "Home",
 		"location": "SPA-Drake",
-		"opponent": "Frost Giants"
+		"opponent": "Frost Giants",
+		"opponent_link": "/team/frost-giants/1192",
+		"game_link": "/game/26872"
 	},
 	{
 		"date": "Sunday Nov 16",
 		"time": "6:50 PM",
 		"home_or_away": "Away",
 		"location": "Aldrich",
-		"opponent": "Renegades"
+		"opponent": "Renegades",
+		"opponent_link": "/team/renegades/491",
+		"game_link": "/game/26906"
 	},
 	{
 		"date": "Wednesday Nov 26",
 		"time": "9:30 PM",
 		"home_or_away": "Home",
 		"location": "Breck",
-		"opponent": "Polars"
+		"opponent": "Polars",
+		"opponent_link": "/team/polars/1220",
+		"game_link": "/game/27009"
 	},
 	{
 		"date": "Saturday Dec 06",
 		"time": "9:30 PM",
 		"home_or_away": "Away",
 		"location": "Richfield 2",
-		"opponent": "HotDishers"
+		"opponent": "HotDishers",
+		"opponent_link": "/team/hotdishers/1266",
+		"game_link": "/game/27089"
 	},
 	{
 		"date": "Sunday Dec 14",
 		"time": "7:10 PM",
 		"home_or_away": "Home",
 		"location": "Highland S",
-		"opponent": "Ice Weasels"
+		"opponent": "Ice Weasels",
+		"opponent_link": "/team/ice-weasels/1049",
+		"game_link": "/game/27170"
 	},
 	{
 		"date": "Saturday Dec 27",
 		"time": "7:45 PM",
 		"home_or_away": "Away",
 		"location": "Richfield 2",
-		"opponent": "Laser Loons"
+		"opponent": "Laser Loons",
+		"opponent_link": "/team/laser-loons/1219",
+		"game_link": "/game/27286"
 	},
 	{
 		"date": "Friday Jan 02",
 		"time": "8:50 PM",
 		"home_or_away": "Home",
 		"location": "Highland N",
-		"opponent": "Bold North D2"
+		"opponent": "Bold North D2",
+		"opponent_link": "/team/bold-north-d2/1142",
+		"game_link": "/game/27337"
 	},
 	{
 		"date": "Thursday Jan 08",
 		"time": "9:20 PM",
 		"home_or_away": "Away",
 		"location": "Phalen",
-		"opponent": "Frost Giants"
+		"opponent": "Frost Giants",
+		"opponent_link": "/team/frost-giants/1192",
+		"game_link": "/game/27398"
 	},
 	{
 		"date": "Wednesday Jan 14",
 		"time": "10:00 PM",
 		"home_or_away": "Home",
 		"location": "Breck",
-		"opponent": "Renegades"
+		"opponent": "Renegades",
+		"opponent_link": "/team/renegades/491",
+		"game_link": "/game/27452"
 	},
 	{
 		"date": "Saturday Jan 17",
 		"time": "8:10 PM",
 		"home_or_away": "Away",
 		"location": "VMCC W",
-		"opponent": "Polars"
+		"opponent": "Polars",
+		"opponent_link": "/team/polars/1220",
+		"game_link": "/game/27479"
 	},
 	{
 		"date": "Saturday Jan 24",
 		"time": "9:00 PM",
 		"home_or_away": "Home",
 		"location": "New Hope N",
-		"opponent": "HotDishers"
+		"opponent": "HotDishers",
+		"opponent_link": "/team/hotdishers/1266",
+		"game_link": "/game/27537"
 	},
 	{
 		"date": "Sunday Feb 01",
 		"time": "9:30 PM",
 		"home_or_away": "Away",
 		"location": "Richfield 1",
-		"opponent": "Ice Weasels"
+		"opponent": "Ice Weasels",
+		"opponent_link": "/team/ice-weasels/1049",
+		"game_link": "/game/27625"
 	},
 	{
 		"date": "Saturday Feb 07",
 		"time": "6:45 PM",
 		"home_or_away": "Home",
 		"location": "BIG 3",
-		"opponent": "Laser Loons"
+		"opponent": "Laser Loons",
+		"opponent_link": "/team/laser-loons/1219",
+		"game_link": "/game/27657"
 	},
 	{
 		"date": "Sunday Feb 15",
 		"time": "7:45 PM",
 		"home_or_away": "Home",
 		"location": "Breck",
-		"opponent": "Bold North D2"
+		"opponent": "Bold North D2",
+		"opponent_link": "/team/bold-north-d2/1142",
+		"game_link": "/game/27710"
 	},
 	{
 		"date": "Sunday Feb 22",
 		"time": "8:40 PM",
 		"home_or_away": "Away",
 		"location": "Highland S",
-		"opponent": "Frost Giants"
+		"opponent": "Frost Giants",
+		"opponent_link": "/team/frost-giants/1192",
+		"game_link": "/game/27781"
 	},
 	{
 		"date": "Friday Mar 06",
 		"time": "9:30 PM",
 		"home_or_away": "Home",
 		"location": "Richfield 2",
-		"opponent": "Renegades"
+		"opponent": "Renegades",
+		"opponent_link": "/team/renegades/491",
+		"game_link": "/game/27892"
 	},
 	{
 		"date": "Wednesday Mar 11",
 		"time": "8:45 PM",
 		"home_or_away": "Away",
 		"location": "New Hope S",
-		"opponent": "Polars"
+		"opponent": "Polars",
+		"opponent_link": "/team/polars/1220",
+		"game_link": "/game/27959"
 	},
 	{
 		"date": "Monday Mar 16",
 		"time": "7:15 PM",
 		"home_or_away": "Home",
 		"location": "BIG 3",
-		"opponent": "HotDishers"
+		"opponent": "HotDishers",
+		"opponent_link": "/team/hotdishers/1266",
+		"game_link": "/game/28031"
 	},
 	{
 		"date": "Sunday Mar 22",
 		"time": "9:00 PM",
 		"home_or_away": "Away",
 		"location": "Richfield 1",
-		"opponent": "Ice Weasels"
+		"opponent": "Ice Weasels",
+		"opponent_link": "/team/ice-weasels/1049",
+		"game_link": "/game/28105"
 	}
 ]
