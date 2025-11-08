@@ -1,5 +1,5 @@
 import discord
-from discord.ext import tasks, commands
+from discord.ext import commands
 from datetime import datetime, timedelta, time as dtime
 import json
 import os
@@ -60,7 +60,10 @@ def get_next_event():
     upcoming_events = []
     for event in events:
         dt_str = f"{event['date']} {event['time']}"
-        event_datetime = datetime.strptime(dt_str, "%A %b %d %I:%M %p")
+        try:
+            event_datetime = datetime.strptime(dt_str, "%A %b %d %I:%M %p")
+        except ValueError:
+            continue  # Skip malformed dates
         if event_datetime > now:
             upcoming_events.append((event_datetime, event))
     if upcoming_events:
@@ -73,11 +76,9 @@ def get_next_event():
 @bot.event
 async def on_ready():
     print(f"✅ Logged in as {bot.user}")
-    check_events.start()
-    # Start a loop to check at a specific time
     bot.loop.create_task(
         daily_check_loop(hour=12, minute=0)
-    )  # Change hour/minute as desired
+    )  # Set your desired reminder time here
 
 
 # --- Commands ---
@@ -88,7 +89,9 @@ async def list_events(ctx):
         await ctx.send("No events found.")
         return
     messages = [format_event_message(event) for event in events]
-    await ctx.send("\n\n".join(messages))
+    # Discord has message length limits; send in chunks if needed
+    for msg in messages:
+        await ctx.send(msg)
 
 
 @bot.command()
@@ -112,13 +115,16 @@ async def daily_check_loop(hour=12, minute=0):
         wait_seconds = (target_time - now).total_seconds()
         await asyncio.sleep(wait_seconds)
 
-        # Now check events
+        # Check events 4 days out
         channel = bot.get_channel(CHANNEL_ID)
         events = load_events()
         today = datetime.now().date()
         for event in events:
             dt_str = f"{event['date']} {event['time']}"
-            event_datetime = datetime.strptime(dt_str, "%A %b %d %I:%M %p")
+            try:
+                event_datetime = datetime.strptime(dt_str, "%A %b %d %I:%M %p")
+            except ValueError:
+                continue
             if event_datetime.date() - today == timedelta(days=4):
                 await channel.send(format_event_message(event))
 
