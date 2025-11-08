@@ -351,17 +351,17 @@ async def list_games(ctx: commands.Context):
 
 
 quotes = [
-    "SHOOT IT!!!",
-    "NOT DOWN THE MIDDLE!!!",
-    "GET IT OUT OF THERE!!!",
-    "GET BACK!!!",
+    ("SHOOT IT!!!", "Dan Fine"),
+    ("NOT DOWN THE MIDDLE!!!", "Dan Fine"),
+    ("GET IT OUT OF THERE!!!", "Dan Fine"),
+    ("GET BACK!!!", "Dan Fine"),
 ]
 
 
 @bot.command()
 async def yell(ctx: commands.Context):
     quote = random.choice(quotes)
-    quote = f'*"{quote}"*'
+    quote = f'*"{quote[0]}"* - {quote[1]}'
     await ctx.send(quote)
     await ctx.message.delete()
 
