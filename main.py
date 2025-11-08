@@ -368,6 +368,10 @@ async def fine_yell_random(ctx: commands.Context):
 
 @bot.command()
 async def fine_yell(ctx: commands.Context, *, arg):
+    # make all caps and add exclamation marks
+    arg = arg.upper()
+    if not arg.endswith("!"):
+        arg += "!!!"
     quote = f'*"{arg}"* - Dan Fine'
     await ctx.send(quote)
 
