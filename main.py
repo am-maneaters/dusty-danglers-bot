@@ -6,13 +6,13 @@ import os
 from flask import Flask
 from threading import Thread
 import asyncio
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import random
 from typing import TypedDict
 import requests
 from bs4 import BeautifulSoup
 
-load_dotenv()
+# load_dotenv()
 
 # --- Flask web server to keep Render alive ---
 app = Flask("")
