@@ -64,6 +64,8 @@ def load_games() -> list[Game]:
         events = []
         for game in games:
             event_datetime = parse_event_datetime(game)
+            if event_datetime is None:
+                print(f"Broken date {game.get('date', '')}")
             event = {
                 "date": event_datetime.strftime("%A, %B %-d"),
                 "time": event_datetime.strftime("%-I:%M%p"),
