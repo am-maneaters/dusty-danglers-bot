@@ -39,7 +39,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # --- Event storage ---
-EVENTS_FILE = "events.json"
+EVENTS_FILE = "./events.json"
 
 # --- Constants ----
 EMOJI_HOME = "<:dusty_danglers_night:1250533925156290761>"
@@ -96,8 +96,11 @@ def format_event_message(event):
 
 def parse_event_datetime(event):
     dt_str = f"{event['date']} {event['time']}"
+    print(f"Parsing date/time: {dt_str}")
     try:
-        return datetime.strptime(dt_str, "%A %b %d %Y %-I:%M %p")
+        parsed_date = datetime.strptime(dt_str, "%A %b %d %Y %-I:%M %p")
+        print(f"Parsed date/time: {parsed_date}")
+        return parsed_date
     except ValueError:
         print(f"Error parsing date/time for event: {event}")
         return None
