@@ -57,13 +57,13 @@ class Game(TypedDict):
     game_link: str
 
 
-def load_games() -> list[Game]:
+async def load_games(interaction) -> list[Game]:
     with open(EVENTS_FILE, "r") as f:
         games = json.load(f)
         # parse dates
         events = []
         for game in games:
-            event_datetime = parse_event_datetime(game)
+            event_datetime = await parse_event_datetime(game, interaction)
             if event_datetime is None:
                 print(f"Broken date {game.get('date', '')}")
             event = {
@@ -94,20 +94,22 @@ def format_event_message(event):
     return msg
 
 
-def parse_event_datetime(event):
+async def parse_event_datetime(event, interaction):
     dt_str = f"{event['date']} {event['time']}"
-    print(f"Parsing date/time: {dt_str}")
+    await interaction.response.send_message(f"Parsing date/time: {dt_str}")
     try:
         parsed_date = datetime.strptime(dt_str, "%A %b %d %Y %-I:%M %p")
-        print(f"Parsed date/time: {parsed_date}")
+        await interaction.response.send_message(f"Parsed date/time: {parsed_date}")
         return parsed_date
     except ValueError:
-        print(f"Error parsing date/time for event: {event}")
+        await interaction.response.send_message(
+            f"Error parsing date/time for event: {event}"
+        )
         return None
 
 
-def get_next_game():
-    events = load_games()
+async def get_next_game(interaction):
+    events = await load_games(interaction)
     now = datetime.now()
     upcoming_events = []
     for event in events:
@@ -346,7 +348,7 @@ async def on_ready():
     name="list_games", description="List all upcoming Dusty Danglers games"
 )
 async def list_games(interaction: discord.Interaction):
-    events = load_games()
+    events = await load_games(interaction)
     if not events:
         await interaction.response.send_message("No games found.")
         return
@@ -383,7 +385,7 @@ async def fine_yell(interaction: discord.Interaction, message: str):
 
 @bot.tree.command(name="next_game", description="Get the next upcoming game")
 async def next_game(interaction: discord.Interaction):
-    event = get_next_game()
+    event = get_next_game(interaction)
     if not event:
         await interaction.response.send_message("No upcoming games found.")
         return
@@ -418,7 +420,7 @@ async def danglers_bot_message(interaction: discord.Interaction, message: str):
     name="summarize_latest_game", description="Get a summary of the latest game"
 )
 async def summarize_latest_game(interaction: discord.Interaction):
-    events = load_games()
+    events = await load_games(interaction)
     if not events:
         await interaction.response.send_message("No games found.")
         return
@@ -453,7 +455,7 @@ async def daily_check_loop(hour=10, minute=0):
 
         # Check games 3 days out
         channel = bot.get_channel(CHANNEL_ID)
-        events = load_games()
+        events = await load_games()
         today = datetime.now().date()
         for event in events:
             event_datetime = event.get("datetime")
