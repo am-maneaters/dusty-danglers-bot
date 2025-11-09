@@ -115,9 +115,6 @@ def get_next_game():
     return None
 
 
-from bs4 import BeautifulSoup
-
-
 def parse_dusty_danglers_summary(game: dict):
     """Fetch and format a Dusty Danglers game summary from AHA Hockey."""
     game_link = game["game_link"]
@@ -332,6 +329,7 @@ def parse_dusty_danglers_summary(game: dict):
 # --- Bot events ---
 @bot.event
 async def on_ready():
+    await bot.tree.sync()  # Registers all slash commands with Discord
     print(f"✅ Logged in as {bot.user}")
     bot.loop.create_task(
         daily_check_loop(hour=10, minute=00)
@@ -339,16 +337,18 @@ async def on_ready():
 
 
 # --- Commands ---
-@bot.command()
-async def list_games(ctx: commands.Context):
+@bot.tree.command(
+    name="list_games", description="List all upcoming Dusty Danglers games"
+)
+async def list_games(interaction: discord.Interaction, message: str):
     events = load_games()
     if not events:
-        await ctx.send("No games found.")
+        await interaction.response.send_message("No games found.")
         return
     messages = [format_event_message(event) for event in events]
     # Discord has message length limits; send in chunks if needed
     for msg in messages:
-        await ctx.send(msg, suppress_embeds=True)
+        await interaction.response.send_message(msg, suppress_embeds=True)
 
 
 quotes = [
@@ -359,38 +359,63 @@ quotes = [
 ]
 
 
-@bot.command()
-async def fine_yell_random(ctx: commands.Context):
+@bot.tree.command(name="fine_yell_random", description="Send a random Dan Fine quote")
+async def fine_yell_random(interaction: discord.Interaction, message: str):
     quote = random.choice(quotes)
     quote = f'*"{quote[0]}"* - {quote[1]}'
-    await ctx.send(quote)
+    await interaction.response.send_message(quote)
 
 
-@bot.command()
-async def fine_yell(ctx: commands.Context, *, arg):
+@bot.tree.command(name="fine_yell", description="Create a Dan Fine quote")
+async def fine_yell(interaction: discord.Interaction, message: str):
     # make all caps and add exclamation marks
-    arg = arg.upper()
+    arg = message.upper()
     if not arg.endswith("!"):
         arg += "!!!"
     quote = f'*"{arg}"* - Dan Fine'
-    await ctx.send(quote)
+    await interaction.response.send_message(quote)
 
 
-@bot.command()
-async def next_game(ctx: commands.Context):
+@bot.tree.command(name="next_game", description="Get the next upcoming game")
+async def next_game(interaction: discord.Interaction):
     event = get_next_game()
     if not event:
-        await ctx.send("No upcoming games found.")
+        await interaction.response.send_message("No upcoming games found.")
         return
-    await ctx.message.delete()
-    await ctx.send(format_event_message(event), suppress_embeds=True)
+    await interaction.response.send_message(
+        format_event_message(event), suppress_embeds=True
+    )
 
 
-@bot.command()
-async def summarize_latest_game(ctx: commands.Context):
+@bot.tree.command(name="dangler_bot_info", description="Get information about the bot")
+async def bot_info(interaction: discord.Interaction):
+    info = (
+        "🤖 **Dusty Danglers Bot**\n\n"
+        "📚 **Features:**\n"
+        "- Lists upcoming games\n"
+        "- Provides game summaries\n"
+        "- Sends automated reminders\n"
+        "- Provides Dan Fine quotes\n\n"
+        "⚙️ **Developed by:** Sem\n"
+        "🌐 **Source Code:** [GitHub Repository](https://github.com/am-maneaters/dusty-danglers-bot)"
+    )
+    await interaction.response.send_message(info)
+
+
+@bot.tree.command(
+    name="danglers_bot_message", description="Author a message as the bot"
+)
+async def danglers_bot_message(interaction: discord.Interaction, message: str):
+    await interaction.response.send_message(message)
+
+
+@bot.tree.command(
+    name="summarize_latest_game", description="Get a summary of the latest game"
+)
+async def summarize_latest_game(interaction: discord.Interaction, message: str):
     events = load_games()
     if not events:
-        await ctx.send("No games found.")
+        await interaction.response.send_message("No games found.")
         return
     # get the most recent past game
     now = datetime.now()
@@ -400,13 +425,12 @@ async def summarize_latest_game(ctx: commands.Context):
         if event_datetime < now:
             past_events.append((event_datetime, event))
     if not past_events:
-        await ctx.send("No past games found.")
+        await interaction.response.send_message("No past games found.")
         return
     past_events.sort(key=lambda x: x[0], reverse=True)
     latest_game = past_events[0][1]
     summary = parse_dusty_danglers_summary(latest_game)
-    await ctx.message.delete()
-    await ctx.send(summary)
+    await interaction.response.send_message(summary)
 
 
 # --- Automated 3-day reminder ---
