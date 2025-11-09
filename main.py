@@ -340,7 +340,7 @@ async def on_ready():
 @bot.tree.command(
     name="list_games", description="List all upcoming Dusty Danglers games"
 )
-async def list_games(interaction: discord.Interaction, message: str):
+async def list_games(interaction: discord.Interaction):
     events = load_games()
     if not events:
         await interaction.response.send_message("No games found.")
@@ -360,7 +360,7 @@ quotes = [
 
 
 @bot.tree.command(name="fine_yell_random", description="Send a random Dan Fine quote")
-async def fine_yell_random(interaction: discord.Interaction, message: str):
+async def fine_yell_random(interaction: discord.Interaction):
     quote = random.choice(quotes)
     quote = f'*"{quote[0]}"* - {quote[1]}'
     await interaction.response.send_message(quote)
@@ -412,7 +412,7 @@ async def danglers_bot_message(interaction: discord.Interaction, message: str):
 @bot.tree.command(
     name="summarize_latest_game", description="Get a summary of the latest game"
 )
-async def summarize_latest_game(interaction: discord.Interaction, message: str):
+async def summarize_latest_game(interaction: discord.Interaction):
     events = load_games()
     if not events:
         await interaction.response.send_message("No games found.")
