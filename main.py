@@ -28,6 +28,7 @@ EVENTS_FILE = "./events.json"
 EMOJI_HOME = "<:dusty_danglers_night:1250533925156290761>"
 EMOJI_AWAY = "<:dusty_danglers_day:1250533926796267530>"
 BASE_URL = "https://ahahockey.com"
+DANGLERS_ROLE = "<@&1296192458073575464>"
 
 
 class Game(TypedDict):
@@ -38,6 +39,7 @@ class Game(TypedDict):
     home_or_away: str
     location: str
     game_link: str
+    datetime: datetime
 
 
 def load_games() -> list[Game]:
@@ -64,7 +66,7 @@ def load_games() -> list[Game]:
 
 
 # --- Helper functions ---
-def format_event_message(event):
+def format_rsvp_message(event):
     emoji = EMOJI_HOME if event["home_or_away"].lower() == "home" else EMOJI_AWAY
 
     msg = (
@@ -79,14 +81,38 @@ def format_event_message(event):
 
 def parse_event_datetime(event):
     dt_str = f"{event['date']} {event['time']}"
-    print(f"Parsing date/time: {dt_str}")
     try:
         parsed_date = datetime.strptime(dt_str, "%A %b %d %Y %I:%M %p")
-        print(f"Parsed date/time: {parsed_date}")
         return parsed_date
     except ValueError:
-        print(f"Error parsing date/time for event: {event}")
         return None
+
+
+game_day_messages = [
+    lambda: "WTFU ITS GAME DAY!!!",
+    lambda: "GET IN LOSER, WE'RE GOING TO WIN OUR GAME TONIGHT!!!",
+    lambda: "WELCOME TO DAY OF GAME",
+    lambda: f"{(get_next_game()['datetime'] - datetime.now()).total_seconds():.0f} SECONDS TO GAME TIME",
+    lambda: "TIME FOR AN EZ W TNIGHT!!!",
+    lambda: "YOU HYPED? WELL YOU SHOULD BE, IT'S GAME DAY!!!",
+    lambda: "SHAKE OFF THE DUST, DANGLERS, IT'S GAME DAY!!!",
+    lambda: "I HEARD STEVE IS SCORING A HAT TRICK TONIGHT, GET HYPED!!!",
+    lambda: "I HOPE YOU LIKE HOCKEY, CUZ WE HAVE HOCKEY TN!!!",
+    lambda: "6-7?? MORE LIKE 7-6 IN OUR FAVOR TONIGHT!!!",
+    lambda: "GRAB YOUR STICKS, IT'S GAME DAY!!!",
+    lambda: "AJ'S GETTING HIS FIRST GOALIE GOAL TONIGHT, LET'S GO!!",
+]
+
+
+def format_game_day_message(event: Game):
+    jersey_color = "light" if event["home_or_away"].lower() == "home" else "dark"
+    emoji = EMOJI_HOME if event["home_or_away"].lower() == "home" else EMOJI_AWAY
+
+    return (
+        f"{DANGLERS_ROLE} {random.choice(game_day_messages)()}\n\n"
+        f"{emoji} Personal reminder for <@1126284695689232415>, bring your {jersey_color} jersey\n\n"
+        f"📍 See ya'll {event['time']} at {event['location']}"
+    )
 
 
 def get_next_game():
@@ -102,6 +128,26 @@ def get_next_game():
         return upcoming_events[0][1]
     return None
 
+
+def parse_player_string(player_str):
+    """Extract player name and number from a string like '#12. J. Doe'.
+    Returns a tuple of (name, number) or (None, None) if parsing fails.
+    Also removes capital C from the end of the name if it exists.
+    """
+    if not player_str:
+        return None, None
+    parts = player_str.split()
+    if len(parts) < 2:
+        return None, None
+    number = parts[0].lstrip("#")
+    if number.endswith("."):
+        number = number[:-1].strip()
+    name = " ".join(parts[1:])
+    if name.endswith("C"):
+        name = name[:-1].strip()
+    return name, number
+
+
 def parse_dusty_danglers_summary(game: dict):
     """Fetch and format a Dusty Danglers game summary from AHA Hockey."""
     game_link = game["game_link"]
@@ -114,7 +160,7 @@ def parse_dusty_danglers_summary(game: dict):
 
     # --- Game Info ---
     summary["game_info"] = (
-        f"🏒 **Game Summary vs {game['opponent']} ({game['date']})**\n"
+        f"🏒 **Dusty Danglers vs {game['opponent']} ({game['datetime'].strftime('%b %d')})**"
     )
 
     # --- Final Score ---
@@ -203,11 +249,18 @@ def parse_dusty_danglers_summary(game: dict):
         ):
             continue
         cols = row.find_all("td")
+        scorer_name, scorer_number = parse_player_string(cols[0].get_text(strip=True))
+        assist1_name, assist1_number = parse_player_string(cols[2].get_text(strip=True))
+        assist2_name, assist2_number = parse_player_string(cols[3].get_text(strip=True))
         goals.append(
             {
-                "scorer": cols[0].get_text(strip=True),
-                "assist1": cols[2].get_text(strip=True),
-                "assist2": cols[3].get_text(strip=True),
+                "scorer": f"#{scorer_number} {scorer_name}",
+                "assist1": (
+                    f"#{assist1_number} {assist1_name}" if assist1_name else None
+                ),
+                "assist2": (
+                    f"#{assist2_number} {assist2_name}" if assist2_name else None
+                ),
                 "period": cols[5].get_text(strip=True),
                 "time": cols[6].get_text(strip=True),
             }
@@ -220,9 +273,10 @@ def parse_dusty_danglers_summary(game: dict):
         if not row.find("img", alt="Dusty Danglers"):
             continue
         cols = row.find_all("td")
+        goalie_name, goalie_number = parse_player_string(cols[0].get_text(strip=True))
         goalies.append(
             {
-                "player": cols[0].get_text(strip=True),
+                "player": f"#{goalie_number} {goalie_name}",
                 "shots_against": cols[2].get_text(strip=True),
                 "goals_against": cols[3].get_text(strip=True),
                 "save_pct": cols[4].get_text(strip=True),
@@ -247,12 +301,11 @@ def parse_dusty_danglers_summary(game: dict):
 
     # --- Format the Summary ---
     lines = []
-    lines.append("━━━━━━━━━━━━━━━━━━━━━━━")
     lines.append(summary.get("game_info", ""))
 
     # Final score + result
     if "final_score" in summary and "opponent_score" in summary:
-        lines.append(f"**Result**: *{result}*")
+        lines.append(f"*{result}*")
 
     # Shots on goal
     if summary.get("shots_on_goal"):
@@ -267,11 +320,32 @@ def parse_dusty_danglers_summary(game: dict):
 
     # Goals section
     if goals:
-        lines.append("\n🥅 **Goals**")
+        # Split goals into periods
+        period_goals = {
+            "1": [],
+            "2": [],
+            "3": [],
+        }
+
         for g in goals:
-            assists = [a for a in [g["assist1"], g["assist2"]] if a]
-            assist_text = f" _(Assists: {', '.join(assists)})_" if assists else ""
-            lines.append(f"• {g['scorer']} — {g['period']}P {g['time']}{assist_text}")
+            period = g["period"]
+            if period not in period_goals:
+                period_goals[period] = []
+            period_goals[period].append(g)
+
+        for period in sorted(period_goals.keys()):
+            lines.append(f"\n⏱️ **Period {period} Goals**")
+            for g in period_goals[period]:
+                assist_text = ""
+                if g["assist1"] and not g["assist2"]:
+                    assist_text = f" _(from {g['assist1']})_"
+                if g["assist1"] and g["assist2"]:
+                    assist_text = f" _(from {g['assist1']}, {g['assist2']})_"
+                if not g["assist1"] and not g["assist2"]:
+                    assist_text = " _(Unassisted)_"
+                lines.append(f"• {g['time']} - {g['scorer']}{assist_text}")
+            if not period_goals[period]:
+                lines.append("• No goals scored in this period.")
 
         # get player with the most goals/assists
         player_stats = {}
@@ -292,8 +366,10 @@ def parse_dusty_danglers_summary(game: dict):
                         f"\n🏆 Big game for **{top_players[0]}** with {max_points} point(s)!"
                     )
                 else:
-                    names = ", ".join(f"**{p}**" for p in top_players)
-                    lines.append(f"\n🏆 MVPs: {names} — {max_points} point(s) each!")
+                    names = ", ".join(f"{p}" for p in top_players)
+                    lines.append(
+                        f"\n🏆 **MVPs**\n {names} — {max_points} point(s) each!"
+                    )
 
         if len(goals) == 0:
             lines.append("• ope, we should probably try scoring more next time...")
@@ -307,8 +383,6 @@ def parse_dusty_danglers_summary(game: dict):
             )
             if g["goals_against"] == "0":
                 lines.append("🎉🎉🎉 shutout!!! 🎉🎉🎉")
-
-    lines.append("━━━━━━━━━━━━━━━━━━━━━━━")
 
     return "\n".join(lines)
 
@@ -332,7 +406,7 @@ async def list_games(interaction: discord.Interaction):
     if not events:
         await interaction.response.send_message("No games found.")
         return
-    messages = [format_event_message(event) for event in events]
+    messages = [format_rsvp_message(event) for event in events]
     # Discord has message length limits; send in chunks if needed
     for msg in messages:
         await interaction.response.send_message(msg, suppress_embeds=True)
@@ -363,6 +437,16 @@ async def fine_yell(interaction: discord.Interaction, message: str):
     await interaction.response.send_message(quote)
 
 
+@bot.tree.command(name="game_day_message", description="Get a message for game day")
+async def game_day_message(interaction: discord.Interaction):
+    event = get_next_game()
+    if not event:
+        await interaction.response.send_message("No upcoming games found.")
+        return
+    message = format_game_day_message(event)
+    await interaction.response.send_message(message)
+
+
 @bot.tree.command(name="next_game", description="Get the next upcoming game")
 async def next_game(interaction: discord.Interaction):
     event = get_next_game()
@@ -370,7 +454,7 @@ async def next_game(interaction: discord.Interaction):
         await interaction.response.send_message("No upcoming games found.")
         return
     await interaction.response.send_message(
-        format_event_message(event), suppress_embeds=True
+        format_rsvp_message(event), suppress_embeds=True
     )
 
 
@@ -440,7 +524,7 @@ async def daily_check_loop(hour=10, minute=0):
         for event in events:
             event_datetime = event.get("datetime")
             if event_datetime.date() - today == timedelta(days=3):
-                await channel.send(format_event_message(event), suppress_embeds=True)
+                await channel.send(format_rsvp_message(event), suppress_embeds=True)
 
 
 bot.run(TOKEN)
