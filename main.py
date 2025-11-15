@@ -60,6 +60,7 @@ def load_games() -> list[Game]:
                 "home_or_away": game.get("home_or_away", ""),
                 "location": game.get("location", ""),
                 "game_link": f"{BASE_URL}{game.get("game_link", "")}",
+                "location_link": f"https://www.google.com/maps/search/?api=1&query={game.get('location', '').replace(' ', '+')}+arena",
             }
             events.append(event)
     return events
@@ -111,7 +112,7 @@ def format_game_day_message(event: Game):
     return (
         f"{DANGLERS_ROLE} {random.choice(game_day_messages)()}\n\n"
         f"{emoji} Personal reminder for <@1126284695689232415>, bring your {jersey_color} jersey\n\n"
-        f"📍 See ya'll {event['time']} at {event['location']}"
+        f"📍 See ya'll {event['time']} at [{event['location']}]({event['location_link']})"
     )
 
 
@@ -444,7 +445,7 @@ async def game_day_message(interaction: discord.Interaction):
         await interaction.response.send_message("No upcoming games found.")
         return
     message = format_game_day_message(event)
-    await interaction.response.send_message(message)
+    await interaction.response.send_message(message, suppress_embeds=True)
 
 
 @bot.tree.command(name="next_game", description="Get the next upcoming game")
