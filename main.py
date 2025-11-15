@@ -3,32 +3,15 @@ from discord.ext import commands
 from datetime import datetime, timedelta, time as dtime
 import json
 import os
-from flask import Flask
-from threading import Thread
 import asyncio
 
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 import random
 from typing import TypedDict
 import requests
 from bs4 import BeautifulSoup
 
-# load_dotenv()
-
-# --- Flask web server to keep Render alive ---
-app = Flask("")
-
-
-@app.route("/")
-def home():
-    return "Bot is running!"
-
-
-def run():
-    app.run(host="0.0.0.0", port=8080)
-
-
-Thread(target=run).start()
+load_dotenv()
 
 # --- Discord bot setup ---
 TOKEN = os.getenv("TOKEN")
@@ -67,7 +50,7 @@ def load_games() -> list[Game]:
             if event_datetime is None:
                 print(f"Broken date {game.get('date', '')}")
             event = {
-                "date": event_datetime.strftime("%A, %B %-d"),
+                "date": event_datetime.strftime("%A, %B %d"),
                 "time": event_datetime.strftime("%-I:%M%p"),
                 "datetime": event_datetime,
                 "opponent": game.get("opponent", ""),
@@ -98,7 +81,7 @@ def parse_event_datetime(event):
     dt_str = f"{event['date']} {event['time']}"
     print(f"Parsing date/time: {dt_str}")
     try:
-        parsed_date = datetime.strptime(dt_str, "%A %b %d %Y %-I:%M %p")
+        parsed_date = datetime.strptime(dt_str, "%A %b %d %Y %I:%M %p")
         print(f"Parsed date/time: {parsed_date}")
         return parsed_date
     except ValueError:
@@ -118,7 +101,6 @@ def get_next_game():
         upcoming_events.sort(key=lambda x: x[0])
         return upcoming_events[0][1]
     return None
-
 
 def parse_dusty_danglers_summary(game: dict):
     """Fetch and format a Dusty Danglers game summary from AHA Hockey."""
