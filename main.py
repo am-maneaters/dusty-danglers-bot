@@ -348,28 +348,37 @@ def parse_dusty_danglers_summary(game: dict):
             if not period_goals[period]:
                 lines.append("• No goals scored in this period.")
 
-        # get player with the most goals/assists
+        # tally goals and assists per player (track goals, assists, points)
         player_stats = {}
         for g in goals:
             scorer = g["scorer"]
-            player_stats[scorer] = player_stats.get(scorer, 0) + 1
-            for assist in [g["assist1"], g["assist2"]]:
-                if assist:
-                    player_stats[assist] = player_stats.get(assist, 0) + 1
+            if scorer not in player_stats:
+                player_stats[scorer] = {"goals": 0, "assists": 0, "points": 0}
+            player_stats[scorer]["goals"] += 1
+            player_stats[scorer]["points"] += 1
 
-        # determine MVP (handle ties)
+            for assist in (g.get("assist1"), g.get("assist2")):
+                if assist:
+                    if assist not in player_stats:
+                        player_stats[assist] = {"goals": 0, "assists": 0, "points": 0}
+                    player_stats[assist]["assists"] += 1
+                    player_stats[assist]["points"] += 1
+
+        # MVPs: list every player with 2+ points, one line each with repeated emojis
         if player_stats:
-            max_points = max(player_stats.values())
-            top_players = [p for p, pts in player_stats.items() if pts == max_points]
-            if max_points > 1:
-                if len(top_players) == 1:
+            mvp_list = sorted(
+                [(p, s) for p, s in player_stats.items() if s["points"] >= 2],
+                key=lambda x: (x[1]["points"], x[1]["goals"], x[0]),
+                reverse=True,
+            )
+            if mvp_list:
+                lines.append(f"\n🏆 **MVP{'s' if len(mvp_list) > 1 else ''}**")
+                for p, stats in mvp_list:
+                    goals_emojis = "🥅" * stats.get("goals", 0)
+                    assists_emojis = "🍎" * stats.get("assists", 0)
+                    emoji_part = f"{goals_emojis}{assists_emojis}".strip()
                     lines.append(
-                        f"\n🏆 Big game for **{top_players[0]}** with {max_points} point(s)!"
-                    )
-                else:
-                    names = ", ".join(f"{p}" for p in top_players)
-                    lines.append(
-                        f"\n🏆 **MVPs**\n {names} — {max_points} point(s) each!"
+                        f"{p} ({emoji_part})"
                     )
 
         if len(goals) == 0:
