@@ -387,8 +387,10 @@ def parse_dusty_danglers_summary(game: dict):
             key=lambda x: (x[1]["points"], x[1]["goals"], x[0]),
             reverse=True,
         )
-        if mvp_list:
+        if mvp_list or is_shutout:
             lines.append(f"\n🏆 **MVP{'s' if len(mvp_list) > 1 else ''}**")
+            if is_shutout:
+                lines.append(f"{goalies[0]['player']} (🚫🥅)")
             for p, stats in mvp_list:
                 goals_emojis = "🥅" * stats.get("goals", 0)
                 assists_emojis = "🍎" * stats.get("assists", 0)
