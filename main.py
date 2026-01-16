@@ -505,8 +505,8 @@ async def summarize_latest_game(interaction: discord.Interaction):
     await interaction.response.send_message(summary)
 
 
-# --- Automated 3-day reminder ---
-async def daily_check_loop(hour=10, minute=0):
+# --- Automated reminders ---
+async def daily_check_loop(hour=8, minute=0):
     print("🔍 Checking for games 3 days out...")
     """Loop that checks games at a specific time each day"""
     await bot.wait_until_ready()
@@ -518,7 +518,6 @@ async def daily_check_loop(hour=10, minute=0):
         wait_seconds = (target_time - now).total_seconds()
         await asyncio.sleep(wait_seconds)
 
-        # Check games 3 days out
         channel = bot.get_channel(CHANNEL_ID)
         events = load_games()
         today = datetime.now().date()
@@ -526,6 +525,8 @@ async def daily_check_loop(hour=10, minute=0):
             event_datetime = event.get("datetime")
             if event_datetime.date() - today == timedelta(days=3):
                 await channel.send(format_rsvp_message(event), suppress_embeds=True)
+            if event_datetime.date() == today:
+                await channel.send(format_game_day_message(event), suppress_embeds=True)
 
 
 bot.run(TOKEN)
