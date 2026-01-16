@@ -319,8 +319,6 @@ def parse_dusty_danglers_summary(game: dict):
         lines.append("\n🎯 **Shots on Goal**")
         lines.append(" • " + " | ".join(period_texts) + f" | **Total: {s['total']}**")
 
-    player_stats = {}
-
     # Goals section
     if goals:
         # Split goals into periods
@@ -350,10 +348,41 @@ def parse_dusty_danglers_summary(game: dict):
             if not period_goals[period]:
                 lines.append("• No goals scored in this period.")
 
+        # tally goals and assists per player (track goals, assists, points)
+        player_stats = {}
+        for g in goals:
+            scorer = g["scorer"]
+            if scorer not in player_stats:
+                player_stats[scorer] = {"goals": 0, "assists": 0, "points": 0}
+            player_stats[scorer]["goals"] += 1
+            player_stats[scorer]["points"] += 1
+
+            for assist in (g.get("assist1"), g.get("assist2")):
+                if assist:
+                    if assist not in player_stats:
+                        player_stats[assist] = {"goals": 0, "assists": 0, "points": 0}
+                    player_stats[assist]["assists"] += 1
+                    player_stats[assist]["points"] += 1
+
+        # MVPs: list every player with 2+ points, one line each with repeated emojis
+        if player_stats:
+            mvp_list = sorted(
+                [(p, s) for p, s in player_stats.items() if s["points"] >= 2],
+                key=lambda x: (x[1]["points"], x[1]["goals"], x[0]),
+                reverse=True,
+            )
+            if mvp_list:
+                lines.append(f"\n🏆 **MVP{'s' if len(mvp_list) > 1 else ''}**")
+                for p, stats in mvp_list:
+                    goals_emojis = "🥅" * stats.get("goals", 0)
+                    assists_emojis = "🍎" * stats.get("assists", 0)
+                    emoji_part = f"{goals_emojis}{assists_emojis}".strip()
+                    lines.append(
+                        f"{p} ({emoji_part})"
+                    )
+
         if len(goals) == 0:
             lines.append("• ope, we should probably try scoring more next time...")
-
-    is_shutout = False
 
     # Goalies section
     if goalies:
@@ -363,40 +392,7 @@ def parse_dusty_danglers_summary(game: dict):
                 f"• {g['player']} — {g['shots_against']} SA | {g['goals_against']} GA | {g['save_pct']} SV%"
             )
             if g["goals_against"] == "0":
-                is_shutout = True
-
-    # tally goals and assists per player (track goals, assists, points)
-    for g in goals:
-        scorer = g["scorer"]
-        if scorer not in player_stats:
-            player_stats[scorer] = {"goals": 0, "assists": 0, "points": 0}
-        player_stats[scorer]["goals"] += 1
-        player_stats[scorer]["points"] += 1
-
-        for assist in (g.get("assist1"), g.get("assist2")):
-            if assist:
-                if assist not in player_stats:
-                    player_stats[assist] = {"goals": 0, "assists": 0, "points": 0}
-                player_stats[assist]["assists"] += 1
-                player_stats[assist]["points"] += 1
-
-    # MVPs: list every player with 2+ points, one line each with repeated emojis
-    if player_stats:
-        mvp_list = sorted(
-            [(p, s) for p, s in player_stats.items() if s["points"] >= 2],
-            key=lambda x: (x[1]["points"], x[1]["goals"], x[0]),
-            reverse=True,
-        )
-        if mvp_list or is_shutout:
-            lines.append(f"\n🏆 **MVP{'s' if len(mvp_list) > 1 else ''}**")
-            if is_shutout:
-                lines.append(f"{goalies[0]['player']} (🚫🥅)")
-            for p, stats in mvp_list:
-                goals_emojis = "🥅" * stats.get("goals", 0)
-                assists_emojis = "🍎" * stats.get("assists", 0)
-                emoji_part = f"{goals_emojis}{assists_emojis}".strip()
-                lines.append(f"{p} ({emoji_part})")
-        
+                lines.append("🎉🎉🎉 shutout!!! 🎉🎉🎉")
 
     return "\n".join(lines)
 
